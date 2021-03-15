@@ -1,13 +1,8 @@
-//+------------------------------------------------------------------+
-//|                                                  BPFrameWork.mqh |
-//|                        Copyright 2020, MetaQuotes Software Corp. |
-//|                                             https://www.mql5.com |
-//+------------------------------------------------------------------+
-#property copyright "Copyright 2020, MetaQuotes Software Corp."
-#property link      "https://www.mql5.com"
-#property version   "1.00"
+#property copyright "Copyright 2020, TradingToolCrypto Corp"
+#property link "https://github.com/TradingToolCrypto"
+#property version "1.00"
 
-#include <TradingToolCrypto/CBP/RobotFrameWork.mqh>
+#include <TradingToolCrypto/TT/RobotFrameWork.mqh>
 #include <TradingToolCrypto/CBP/CryptoBridgeProClass.mqh>
 CryptoBridge bridge;
 RobotFrameWork symbol;
