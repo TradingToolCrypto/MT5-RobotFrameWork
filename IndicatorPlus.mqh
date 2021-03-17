@@ -3,42 +3,39 @@
 #property version "1.00"
 input group "--------------START INDICATORS ------------------"
 
-input string PLEASE_ADJUST_BB_STATEGY = "------------------------------------";
-input int MA_PERIOD_A = 0;
-input ENUM_MA_METHOD MA_TYPE = MODE_EMA;
-input ENUM_APPLIED_PRICE MA_DATA_TYPE = PRICE_MEDIAN;
-input double MA_DEVIATION = 2.0;
-input int MA_BAR_SHIFT = 0;
+input string PLEASE_ADJUST_BB_STATEGY     = "------------------------------------";
+input int MA_PERIOD_A                     = 0;
+input ENUM_MA_METHOD MA_TYPE              = MODE_EMA;
+input ENUM_APPLIED_PRICE MA_DATA_TYPE     = PRICE_MEDIAN;
+input double MA_DEVIATION                 = 2.0;
+input int MA_BAR_SHIFT                    = 0;
 
-input string PLEASE_ADJUST_EMA_STATEGY = "------------------------------------";
-input int EMA_PERIOD_A = 0;
-input int EMA_PERIOD_B = 0;
-input ENUM_MA_METHOD EMA_TYPE = MODE_EMA;
-input ENUM_APPLIED_PRICE EMA_DATA_TYPE = PRICE_CLOSE;
-input int EMA_BAR_SHIFT = 0;
+input string PLEASE_ADJUST_EMA_STATEGY    = "------------------------------------";
+input int EMA_PERIOD_A                    = 0;
+input int EMA_PERIOD_B                    = 0;
+input ENUM_MA_METHOD EMA_TYPE             = MODE_EMA;
+input ENUM_APPLIED_PRICE EMA_DATA_TYPE    = PRICE_CLOSE;
+input int EMA_BAR_SHIFT                   = 0;
 
-input double EMASPREAD_BUY = -0.60;
-input double EMASPREAD_SELL = 0.60;
+input double EMASPREAD_BUY                = -0.60;
+input double EMASPREAD_SELL               = 0.60;
 
-input string PLEASE_ADJUST_RSI_STATEGY = "------------------------------------";
-input int RSI_PERIOD_A = 0;
-input ENUM_APPLIED_PRICE RSI_DATA_TYPE = PRICE_CLOSE;
-
-input double RSI_BUY = 20;
-input double RSI_SELL = 80;
+input string PLEASE_ADJUST_RSI_STATEGY    = "------------------------------------";
+input int RSI_PERIOD_A                    = 0;
+input ENUM_APPLIED_PRICE RSI_DATA_TYPE    = PRICE_CLOSE;
+input double RSI_BUY                      = 20;
+input double RSI_SELL                     = 80;
 
 input string PLEASE_ADJUST_FRACTAL_STATEGY = "------------------------------------";
-input bool FRACTAL_1 = true;
-input int ExtDepth=6;
-input int ExtDeviation = 5;
-input int ExtBackStep = 3;
+input int ExtDepth                         = 6;
+input int ExtDeviation                     = 5;
+input int ExtBackStep                      = 3;
 
 input string PLEASE_ADJUST_CUSTOM_RSI_STATEGY = "------------------------------------";
-input bool CUSTOM_RSI_1  = false;
-input int  CUSTOM_RSI_PERIOD = 14;
-input int  CUSTOM_RSI_SMOOTHING = 0;
-input double CUSTOM_RSI_LEVEL_UP = 80;
-input double CUSTOM_RSI_LEVEL_DN = 20;
+input int  CUSTOM_RSI_PERIOD                  = 0;
+input int  CUSTOM_RSI_SMOOTHING               = 0;
+input double CUSTOM_RSI_LEVEL_UP              = 80;
+input double CUSTOM_RSI_LEVEL_DN              = 20;
 
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -218,7 +215,7 @@ bool IndicatorPlus::Init_IndicatorPlus(string what_market)
         }
      }
 
-   if(FRACTAL_1)
+   if(ExtDepth != 0)
      {
       ZZ_handle_1 = iCustom(Symbol(), PERIOD_CURRENT, "Examples\\ZigZag", ExtDepth, ExtDeviation, ExtBackStep);
       //--- report if there was an error in object creation
@@ -233,7 +230,7 @@ bool IndicatorPlus::Init_IndicatorPlus(string what_market)
 
 
 
-   if(CUSTOM_RSI_1)
+   if(CUSTOM_RSI_PERIOD != 0 )
      {
       CUSTOM_RSI_handle_1 = iCustom(Symbol(), PERIOD_CURRENT, "RSI_FISHER",
                                     CUSTOM_RSI_PERIOD,
