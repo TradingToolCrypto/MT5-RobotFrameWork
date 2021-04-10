@@ -54,15 +54,29 @@ public:
    bool              tradeDeleteLimit(bool longOnly);
    bool              tradeDeleteStop(bool longOnly);
 
-   bool              tradeTotalPending();
-   int               tradeTotalPendingLimitLong;
-   int               tradeTotalPendingLimitShort;
-   int               tradeTotalPendingStopLong;
-   int               tradeTotalPendingStopShort;
+   int               orderPending();
+   int               orderPendingLimitLong;
+   int               orderPendingLimitShort;
+   int               orderPendingStopLimitLong;
+   int               orderPendingStopLimitShort;
+   int               orderPendingStopLong;
+   int               orderPendingStopShort;
 
-   bool              tradeTotal();
-   int               tradeTotalLong;
-   int               tradeTotalShort;
+   bool              orderPendingTriggered(bool isLong, double bid, double ask, bool limit, bool stop, bool stoplimit);
+
+   bool              positionTotal();
+   int               positionTotalLong;
+   int               positionTotalShort;
+   double            position_avg_price_sell;
+   double            position_avg_price_buy;
+   double            position_volume_sell;
+   double            position_volume_buy;
+
+   bool              balance(string baseCurrency, int x_axis, int y_axis);
+   double            balanceBaseCurrency;
+
+   bool              volume(bool ifLong, const string baseCurrency,const double balanceInBase, const double riskPercentage, const double slPoints, const double commissionPercent);
+   double            volumeUnits;
   };
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -71,8 +85,6 @@ CBPFrameWork::CBPFrameWork()
   {
    exchangeName = bridge.Get_Exchange_Name(Exchange_Number);
    frameworkPrefix = (string)Exchange_Number + "." + exchangeName + ".";
-   tradeTotalLong=0;
-   tradeTotalShort=0;
    RobotFrameWork::Init_Symbol(Symbol());
 
    Print(" Check RobotFrameWork Symbol's Price " + RobotFrameWork::symbolAsk());
@@ -353,10 +365,14 @@ bool CBPFrameWork::tradeCloseLimit(bool isLong, double volume, double price)
    - however, this could change in the future with Hedging Account Types
 
 */
-bool CBPFrameWork::tradeTotal()
+bool CBPFrameWork::positionTotal()
   {
-   tradeTotalLong = 0;
-   tradeTotalShort = 0;
+   positionTotalLong = 0;
+   positionTotalShort = 0;
+   position_avg_price_sell=0;
+   position_avg_price_buy=0;
+   position_volume_sell=0;
+   position_volume_buy=0;
 
    if(bridge.Get_Position(Exchange_Symbol_Name,Exchange_Number,Exchange_Quote_Precision))
      {
@@ -366,22 +382,21 @@ bool CBPFrameWork::tradeTotal()
         {
          return(true);
         }
-      Print("CBPFrameWork::tradeTotal() | Array Size | " + IntegerToString(loop));
       for(int i = 0; i<loop; i++)
         {
-         Print(" Loop " + exchange_symbol_p[i] + " Match with | " + Exchange_Symbol_Name);
          if(Exchange_Symbol_Name ==  exchange_symbol_p[i])
            {
-            Print(" Exchange Symbol Matched " + exchange_orderside_p[i]  + " | Natch with buy or sell | ") ;
             if(exchange_orderside_p[i] == "BUY")
               {
-               tradeTotalLong++;
-               Print(" Exchange Symbol Matched BUY |"  + tradeTotalLong + " |") ;
+               positionTotalLong++;
+               position_avg_price_buy = exchange_orderprice_p[i];
+               position_volume_buy = exchange_ordersize_p[i];
               }
             if(exchange_orderside_p[i] == "SELL")
               {
-               tradeTotalShort++;
-               Print(" Exchange Symbol Matched SELL | "  + tradeTotalShort + " |") ;
+               positionTotalShort++;
+               position_avg_price_sell = exchange_orderprice_p[i];
+               position_volume_sell = exchange_ordersize_p[i];
               }
            }
         }
@@ -400,43 +415,65 @@ bool CBPFrameWork::tradeTotal()
    int               tradeTotalPendingStopLong;
    int               tradeTotalPendingStopShort;
 */
-bool CBPFrameWork::tradeTotalPending()
+int CBPFrameWork::orderPending()
   {
+   int loop = 0;
+   orderPendingLimitLong = 0;
+   orderPendingStopLong = 0;
+   orderPendingStopLimitLong = 0;
+
+   orderPendingLimitShort = 0;
+   orderPendingStopShort = 0;
+   orderPendingStopLimitShort = 0;
+
    if(bridge.Get_OpenOrders(Exchange_Symbol_Name,Exchange_Number,Exchange_Quote_Precision))
      {
       bridge.Parse_Orders(exchangeName,640, 1000);
-      int loop = ArraySize(exchange_name);
+      loop = ArraySize(exchange_name);
       for(int i = 0; i<loop; i++)
         {
          if(Exchange_Symbol_Name ==  exchange_symbol[i])
            {
+
+
             if(exchange_orderside[i] == "BUY")
               {
                if(exchange_ordertype[i] == "LIMIT")
                  {
-                  tradeTotalPendingLimitLong++;
-                  Print(" Exchange Symbol Matched BUY LIMIT |"  + tradeTotalPendingLimitLong + " |") ;
+                  orderPendingLimitLong++;
                  }
-
+               if(exchange_ordertype[i] == "STOPMARKET")
+                 {
+                  orderPendingStopLong++;
+                 }
+               if(exchange_ordertype[i] == "STOPLIMIT")
+                 {
+                  orderPendingStopLimitLong++;
+                 }
               }
+
+
             if(exchange_orderside[i] == "SELL")
               {
                if(exchange_ordertype[i] == "LIMIT")
                  {
-                  tradeTotalPendingLimitShort++;
-                  Print(" Exchange Symbol Matched SELL LIMIT | "  + tradeTotalPendingLimitShort + " |") ;
+                  orderPendingLimitShort++;
                  }
-
-
+               if(exchange_ordertype[i] == "STOPMARKET")
+                 {
+                  orderPendingStopShort++;
+                 }
+               if(exchange_ordertype[i] == "STOPLIMIT")
+                 {
+                  orderPendingStopLimitShort++;
+                 }
               }
 
 
            }
-
         }
-      return(true);
      }
-   return(false);
+   return(loop);
   }
 
 //+------------------------------------------------------------------+
@@ -454,6 +491,153 @@ bool CBPFrameWork::tradeDeleteAll()
    if(bridge.Cancel_Trade_All(Exchange_Symbol_Name,Exchange_Number))
      {
       return(true);
+     }
+   return(false);
+  }
+//+------------------------------------------------------------------+
+
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+bool CBPFrameWork::balance(string baseCurrency, int x_axis, int y_axis)
+  {
+   if(bridge.Get_Balance("","", Exchange_Number))
+     {
+      bridge.Parse_Wallets(exchangeName,x_axis,y_axis);
+     }
+   else
+     {
+      Alert("Failed to get Exchange Balance");
+      return(false);
+     }
+   double balanceBase = 0;
+   double balanceUSD = 0;
+   int loop = ArraySize(exchange_wallets);
+   for(int i = 0; i<loop; i++)
+     {
+      if(exchange_wallets[i] == baseCurrency)
+         balanceBase = exchange_wallets_balance[i];
+      break;
+     }
+   if((baseCurrency == "USDT") || (baseCurrency == "USD"))
+     {
+      balanceBaseCurrency = balanceBase;
+     }
+   else
+     {
+      if(bridge.Get_Price(Exchange_Symbol_Name,Exchange_Number,Exchange_Quote_Precision))
+        {
+         int id = bridge.Get_UniqueID();
+         /*
+         need to update the libs to add the echange id
+         id + GLOBAL_Parse_Separator +  
+         */
+         double quote = GlobalVariableGet(exchangeName + GLOBAL_Parse_Separator + Exchange_Symbol_Name +GLOBAL_Parse_Separator +"Ask");
+         balanceBaseCurrency = quote*balanceBase;
+        }
+     }
+   return(true);
+  }
+//+------------------------------------------------------------------+
+
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+bool CBPFrameWork::volume(bool ifLong, const string baseCurrency,const double balanceInBase, const double riskPercentage, const double slPoints, const double commissionPercent)
+  {
+   if((baseCurrency=="") || (balanceInBase == 0) || (riskPercentage == 0) || (slPoints ==0) || (commissionPercent == 0))
+     {
+      return(false);
+     }
+
+   const double price = RobotFrameWork::symbolAsk();
+   const double bid =   RobotFrameWork::symbolBid();
+   const double spread = (price - bid);
+   const double spread_points = spread /  RobotFrameWork::symbolPoint();
+   const double asset_sl = slPoints;
+   const double riskP = riskPercentage*0.01;
+   const double balanceAtRisk = balanceInBase * riskP;
+   const double fee = commissionPercent*0.01;
+   const double feeRT = (commissionPercent*2)*0.01;
+   const double fee0nOneUnit = price * feeRT;
+   const double maxPointsForSL = asset_sl + fee0nOneUnit;
+   const double units = balanceAtRisk / maxPointsForSL;
+   const double commssionOnUnits = (feeRT*units)*price;
+   const double riskTotal = (units * asset_sl) +commssionOnUnits;
+   /*
+    binance USDT futures
+    */
+   if(baseCurrency == "USDT")
+     {
+      volumeUnits = units;
+     }
+   /*
+   bybit markets non usdt
+   */
+   if(baseCurrency != "USDT")
+     {
+      volumeUnits = units * price;;
+     }
+   return(true);
+  }
+//+------------------------------------------------------------------+
+bool CBPFrameWork::orderPendingTriggered(bool isLong,double bid,double ask,bool limit,bool stop,bool stoplimit)
+  {
+
+   int loop = ArraySize(exchange_name);
+
+   if(loop == 0)
+     {
+      return(false);
+     }
+
+   for(int i = 0; i< loop; i++)
+     {
+
+      if(isLong)
+        {
+         if(limit)
+           {
+            if(bid <= exchange_orderprice[i] && exchange_orderside[i] == "BUY" && exchange_ordertype[i] == "LIMIT" )
+              {
+               return(true);
+              }
+           }
+         if(stop)
+           {
+            if(ask >= exchange_orderprice[i] && exchange_orderside[i] == "BUY" && exchange_ordertype[i] == "STOPMARKET")
+              {
+               return(true);
+              }
+           }
+         if(stoplimit)
+           {
+
+           }
+        }
+      else
+        {
+         if(limit)
+           {
+            if(ask >= exchange_orderprice[i] && exchange_orderside[i] == "SELL" && exchange_ordertype[i] == "LIMIT")
+              {
+               return(true);
+              }
+           }
+         if(stop)
+           {
+            if(bid <= exchange_orderprice[i] && exchange_orderside[i] == "SELL" && exchange_ordertype[i] == "STOPMARKET")
+              {
+               return(true);
+              }
+           }
+         if(stoplimit)
+           {
+
+           }
+        }
      }
    return(false);
   }
