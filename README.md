@@ -6,9 +6,10 @@ Hi and welcome to the complete Automated Trading Robot Frame Work. I will be tea
 # CBP FrameWork 
 Makes life easier when making robots and other utilities for your first time. This is the **Easy Crypto Trading Package** for MQL/MT5 that you've always dreamed about. Let's take a look at what is inside
 
-# Include File into your Expert Advisor (EA) aka Robot)
-#include <TradingToolCrypto/CBP/CBPFrameWork.mqh>
-CBPFramework bot;
+# Include File into your Expert Advisor (EA) aka Robot
+#include <TradingToolCrypto/CBP/CBPFrameWork.mqh>  
+
+**CBPFramework** bot;
 ## Make a trade 
 - bot.tradeBuy(orderSize);  
 - bot.tradeBid(orderSize, orderPrice);  
