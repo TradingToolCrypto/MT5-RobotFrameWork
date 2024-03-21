@@ -48,4 +48,13 @@ More order types are supported, but it is limited to the exchange offering the f
   bool tradeBuyStopLimit(double volume, double trigger, double orderprice);
   bool tradeSellStopLimit(double volume, double trigger, double orderprice);
 ```
+Spend less time coding and more time focusing on your trading algorithms.  Add _two lines_ to get started.
 
+```c++
+#include <TradingToolCrypto\CBP\CBPFramework.mqh>  
+CBPFrameWork cb;      // CryptoBridgePro child class
+```
+
+After adding the child class, you can access all the functions within **cb.** When you add the "." after **cb**, MetaEditor will use intellisense to list all the available functions from the CBP Framework. To view all the functions, please see the [mqh file](https://github.com/TradingToolCrypto/MT5-TradingToolCrypto/blob/master/MQL5/Include/TradingToolCrypto/CBP/CBPFrameWork.mqh). 
+
+![function list](https://github.com/TradingToolCrypto/TradingTool-Wiki/blob/master/fqg75Eytxo.gif)
